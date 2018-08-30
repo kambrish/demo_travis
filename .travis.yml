@@ -45,12 +45,14 @@ before_install:
   - mkdir "$ANDROID_HOME/licenses" || true
   - echo -e "\n8933bad161af4178b1185d1a37fbf41ea5269c55" > "$ANDROID_HOME/licenses/android-sdk-license"
   - echo -e "\n84831b9409646a918e30573bab4c9c91346d8abd" > "$ANDROID_HOME/licenses/android-sdk-preview-license"
+  - gem update --system
+  - gem install fastlane --no-rdoc --no-ri --no-document --quiet
 
 script:
-  - android list targets
-  - echo no | android create avd --force -n test -t "android-"$ANDROID_EMULATOR_LEVEL --abi $ANDROID_ABI --tag $ANDROID_TAG
-  - emulator -avd test -no-window &
-  - mkdir -p build/reports
+#  - android list targets
+#  - echo no | android create avd --force -n test -t "android-"$ANDROID_EMULATOR_LEVEL --abi $ANDROID_ABI --tag $ANDROID_TAG
+#  - emulator -avd test -no-window &
+#  - mkdir -p build/reports
   - fastlane test
 #  - ./gradlew dependencyCheckAnalyze
 #  - ./gradlew assembleDebugAndroidTest -PdisablePreDex --continue --stacktrace
