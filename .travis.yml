@@ -1,64 +1,45 @@
+sudo: required
 language: android
 jdk: oraclejdk8
-sudo: false
-
-env:
-  global:
-    - ANDROID_API_LEVEL=27
-    - ANDROID_EMULATOR_LEVEL=18
-    - ANDROID_BUILD_TOOLS_VERSION=28.0.1
-    - ADB_INSTALL_TIMEOUT=20
-    - ANDROID_ABI=armeabi-v7a
-    - ANDROID_TAG=google_apis
-    - QEMU_AUDIO_DRV=none
-
-android:
-  components:
-    - tools
-    - platform-tools
-    - tools
-    - build-tools-$ANDROID_BUILD_TOOLS_VERSION
-    - android-$ANDROID_API_LEVEL
-    - android-$ANDROID_EMULATOR_LEVEL
-    - extra-android-support
-    - extra-google-m2repository
-    - extra-android-m2repository
-    - sys-img-$ANDROID_ABI-google_apis-$ANDROID_EMULATOR_LEVEL
-
-licenses:
-  - android-sdk-preview-license-.+
-  - android-sdk-license-.+
-  - google-gdk-license-.+
-
+before_cache:
+- rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
+- rm -rf $HOME/.gradle/caches/*/plugin-resolution/
 cache:
   directories:
   - "$HOME/.gradle/caches/"
   - "$HOME/.gradle/wrapper/"
   - "$HOME/.android/build-cache"
-
-before_install:
-  - yes | sdkmanager "cmake;3.6.4111459"
-  - wget https://dl.google.com/android/repository/android-ndk-r17-linux-x86_64.zip
-  - unzip android-ndk-r17-linux-x86_64.zip -d $HOME > /dev/null
-  - export ANDROID_NDK_HOME=$HOME/android-ndk-r17
-  - export PATH=$PATH:$ANDROID_NDK_HOME
-  - mkdir "$ANDROID_HOME/licenses" || true
-  - echo -e "\n8933bad161af4178b1185d1a37fbf41ea5269c55" > "$ANDROID_HOME/licenses/android-sdk-license"
-  - echo -e "\n84831b9409646a918e30573bab4c9c91346d8abd" > "$ANDROID_HOME/licenses/android-sdk-preview-license"
-  - gem update --system
-  - gem install fastlane --no-rdoc --no-ri --no-document --quiet
-
+env:
+  global:
+  - ANDROID_API=28
+  - ANDROID_BUILD_TOOLS=28.0.2
+  - ADB_INSTALL_TIMEOUT=5
+  - secure: iR13Xrbof2UqTUX6n4njfHaPMFt+j/hsnyXJ0OvLWcvEkjeDGuaxfmzwVXoXclkxeOVMDybxdzkzQswHmNnN/zInScTG7+t47axklsmrlzpcEZLifxOY9YMN239x2MNSbVvWsk+yaRU7qOJdmeYHpzKJq7cM/KlgX48nt6LPxtgRSraErYx3LKA/Uni8ZPLpNbuFoZv6qfYp+9BG9n1d2JGWAnCz3lxFy96cIEj7f1SHyPHkXVgZ4iTLMQw+51Mny6O2vA2N19Z4Px8Sya+2/WujCXvdE1lXWF9k/OWJmThSMslxiJ+emsJ1EektQbGhb+2jzKgd5RYubtFLvW0ebq2lfOt1X0qr4NNFOtFUxH0wU2WcPY0XMCWoFKjs63a0L/G9jN+pAxTtwwDOryOapbmadREdom1gC+X63bEDJ0A5E+Hc+BZdmWIn8GkhtOb1LgbliihqggrkGA2fh7nL49wzDTNsUZTVGrZXCFUwczSc8NdgzVoTekKrGsUIwDdLgul2YUp6lSW9Ch7aWI9I8F59dLBtTH+vZoBrdg/nwTHJiU+5XNdgsocy911U1oYj3v3xLENa3UkmUQhmXJSBTKb29ojziAj2g8NiUzFy+XddI27n8tVzERUXXtsBzGKJxZ/KQonPwUomcjFrlVSW0SxLcZ+aZ1cEaq0cDf5/m00=
+android:
+  components:
+  - tools
+  - tools
+  - platform-tools
+  - android-${ANDROID_API}
+  - build-tools-${ANDROID_BUILD_TOOLS}
+  - extra
 script:
-#  - android list targets
-#  - echo no | android create avd --force -n test -t "android-"$ANDROID_EMULATOR_LEVEL --abi $ANDROID_ABI --tag $ANDROID_TAG
-#  - emulator -avd test -no-window &
-#  - mkdir -p build/reports
-  - fastlane test
-#  - ./gradlew dependencyCheckAnalyze
-#  - ./gradlew assembleDebugAndroidTest -PdisablePreDex --continue --stacktrace
-#  - android-wait-for-emulator
-#  - adb shell input keyevent 82 &
-#  - ./gradlew connectedDebugAndroidTest -PdisablePreDex --continue --stacktrace
-
-after_failure:
-  - cat $TRAVIS_BUILD_DIR/app/build/reports/lint-results.xml
+- "./gradlew clean test build"
+before_deploy:
+- openssl aes-256-cbc -K $encrypted_657e27e4d3ee_key -iv $encrypted_657e27e4d3ee_iv
+  -in keystore.jks.enc -out keystore.jks -d
+- cd app/build/outputs/apk/release
+- jarsigner -verbose -sigalg SHA1withRSA -digestalg SHA1 -keystore ${TRAVIS_BUILD_DIR}/keystore.jks
+  -storepass $storepass -keypass $keypass app-release-unsigned.apk key0
+- jarsigner -verify app-release-unsigned.apk
+- "${ANDROID_HOME}/build-tools/${ANDROID_BUILD_TOOLS}/zipalign -v 4 app-release-unsigned.apk
+  TravisAndroid.apk"
+- cd -
+- tag.sh
+deploy:
+  provider: releases
+  api_key:
+    secure: iR13Xrbof2UqTUX6n4njfHaPMFt+j/hsnyXJ0OvLWcvEkjeDGuaxfmzwVXoXclkxeOVMDybxdzkzQswHmNnN/zInScTG7+t47axklsmrlzpcEZLifxOY9YMN239x2MNSbVvWsk+yaRU7qOJdmeYHpzKJq7cM/KlgX48nt6LPxtgRSraErYx3LKA/Uni8ZPLpNbuFoZv6qfYp+9BG9n1d2JGWAnCz3lxFy96cIEj7f1SHyPHkXVgZ4iTLMQw+51Mny6O2vA2N19Z4Px8Sya+2/WujCXvdE1lXWF9k/OWJmThSMslxiJ+emsJ1EektQbGhb+2jzKgd5RYubtFLvW0ebq2lfOt1X0qr4NNFOtFUxH0wU2WcPY0XMCWoFKjs63a0L/G9jN+pAxTtwwDOryOapbmadREdom1gC+X63bEDJ0A5E+Hc+BZdmWIn8GkhtOb1LgbliihqggrkGA2fh7nL49wzDTNsUZTVGrZXCFUwczSc8NdgzVoTekKrGsUIwDdLgul2YUp6lSW9Ch7aWI9I8F59dLBtTH+vZoBrdg/nwTHJiU+5XNdgsocy911U1oYj3v3xLENa3UkmUQhmXJSBTKb29ojziAj2g8NiUzFy+XddI27n8tVzERUXXtsBzGKJxZ/KQonPwUomcjFrlVSW0SxLcZ+aZ1cEaq0cDf5/m00=
+  file: app/build/outputs/apk/yourapp*release*.apk
+  on:
+    repo: kambrish/demo_travis
