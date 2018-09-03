@@ -25,7 +25,7 @@ before_script:
 #- emulator -avd test -no-skin -no-audio -no-window &
 #- android-wait-for-emulator
 #- adb shell input keyevent 82 &
-- tag.sh
+- sh tag.sh
 deploy:
   provider: releases
   api_key:
