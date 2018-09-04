@@ -34,7 +34,7 @@ cache:
   - "$HOME/.gradle/wrapper/"
   - "$HOME/.android/build-cache"
 before_install:
-- cd project-folder/
+#- cd project-folder/
 - chmod +x gradlew
 - gem update --system
 - gem install fastlane --no-rdoc --no-ri --no-document --quiet
