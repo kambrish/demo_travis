@@ -44,12 +44,12 @@ before_install:
 - chmod +x gradlew
 - "./gradlew dependencies || true"
 before_script:
-- echo no | android create avd --force -n test -t "android-"$ANDROID_EMULATOR_LEVEL --abi $ANDROID_ABI --tag
-- emulator -avd test -no-skin -no-audio -no-window &
-- android-wait-for-emulator
-- adb shell input keyevent 82 &
+#- echo no | android create avd --force -n test -t "android-"$ANDROID_EMULATOR_LEVEL --abi $ANDROID_ABI --tag
+#- emulator -avd test -no-skin -no-audio -no-window &
+#- android-wait-for-emulator
+#- adb shell input keyevent 82 &
 script:
-- "./gradlew clean build connectedCheck -PdisablePreDex --stacktrace"
+#- "./gradlew clean build connectedCheck -PdisablePreDex --stacktrace"
 before_deploy:
 - cp $TRAVIS_BUILD_DIR/example_keystore.jks $HOME
 - cd app/build/outputs/apk/
