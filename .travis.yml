@@ -34,11 +34,12 @@ cache:
   - "$HOME/.gradle/wrapper/"
   - "$HOME/.android/build-cache"
 before_install:
-- cd demo_travis/
+#- cd demo_travis/
 - chmod +x gradlew
 - gem update --system
 - gem install fastlane --no-rdoc --no-ri --no-document --quiet
 
 script:
-- ./gradlew test
+#- ./gradlew test
+- fastlane test
 - fastlane deploy_production
