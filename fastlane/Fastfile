@@ -12,7 +12,6 @@
 
 # Uncomment the line if you want fastlane to automatically update itself
 # update_fastlane
-
 default_platform(:android)
 
 platform :android do
@@ -25,7 +24,7 @@ platform :android do
   lane :beta do
     gradle(task: "clean assembleRelease")
     crashlytics
-  
+
     # sh "your_script.sh"
     # You can also use other beta testing services here
   end
@@ -37,20 +36,15 @@ platform :android do
   end
 
   desc "Deploy a new version to the Google Play"
-      lane :deploy_production do
-        gradle(task: "assemble",
-                          flavor: "production",
-                          build_type: "release",
-               properties: {
-                "android.injected.signing.store.file" => "demo_travis.jks",
-                              "android.injected.signing.store.password" => ["sourcefuse"] ,
-                              "android.injected.signing.key.alias" => ["sourcefuse"],
-                              "android.injected.signing.key.password" => ["sourcefuse"],
-                                           })
-
-        end
-
-
-
+    lane :deploy_production do
+      gradle(task: "assembleRelease",
+             properties: {
+                 "android.injected.signing.store.file" => "keystore.jks",
+                 "android.injected.signing.store.password" => "sourcefuse" ,
+                 "android.injected.signing.key.alias" => "sourcefuse",
+                 "android.injected.signing.key.password" => "sourcefuse",
+                              })
+      end
 
 end
+

@@ -19,7 +19,7 @@ android {
 
     signingConfigs {
         release {
-            storeFile file("/keystore.jks") //check that the file exists
+            storeFile file("keystore.jks") //check that the file exists
             storePassword "sourcefuse"
             keyAlias "sourcefuse"
             keyPassword "sourcefuse"
