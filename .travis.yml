@@ -65,7 +65,7 @@ after_failure:
   - cat $TRAVIS_BUILD_DIR/app/build/reports/lint-results.xml
 
 before_deploy:
-- cp $TRAVIS_BUILD_DIR/example_keystore.jks $HOME
+- cp $TRAVIS_BUILD_DIR/keystore.jks $HOME
 - cd app/build/outputs/apk/
 - jarsigner -verbose -sigalg SHA1withRSA -digestalg SHA1 -keystore $HOME/keystore.jks
   -storepass $storepass -keypass $keypass app-release-unsigned.apk sourcefuse
