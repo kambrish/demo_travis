@@ -1,38 +1,66 @@
-jdk: oraclejdk8
+language: android
 sudo: required
-dist: precise
-android:
-  components:
-  - tools
-  - platform-tools
-  - build-tools-28.0.2
-  - android-28
-  - extra-android-support
-  - extra-android-m2repository
-  - extra-google-m2repository
-
+jdk: oraclejdk8
+before_cache:
+- rm -f $HOME/.gradle/caches/modules-2/modules-2.lock
+- rm -fr $HOME/.gradle/caches/*/plugin-resolution/
 cache:
   directories:
   - "$HOME/.gradle/caches/"
   - "$HOME/.gradle/wrapper/"
-  - "$HOME/.android/build-cache"
-
-script:
-- "./gradlew build assembleRelease --no-daemon --stacktrace"
+env:
+  global:
+  - ANDROID_API=28
+  - EMULATOR_API=21
+  - ANDROID_BUILD_TOOLS=28.0.2
+  - ADB_INSTALL_TIMEOUT=5
+  - secure: cyT9jwPfDDoTPRxnoYf+agCBacUD0lHXbiiAcuUFfosu4kFkH2ja/J+kx3wVohZqDT5ZmUFuYhVwu1C2jdN7S7aDtMep6r5lWDtmBxK6iiF4DkHdLu7V0RT7XQjoeYIPcUhNTQQbpmjJbFbTYPaAx+2aiUeRU8/DGgawaUG9hy6LVXymmK1gIvMn4CepDrkhvGnOjqHOh1OG2bgDQUJx/1GiQf9VYOBEsyXHHqzMxoDQjIOAAEOOvKJQe3k+cFhVca3w3BUrO4EBuKbsuB8f/v5PYkGoeh+mKn3vXh0Eg8PvM2qwFJKhjxQ238aPNpVmUZl3FAVCPRudqEJeuFN6pPpE5Xh08zPk6c9MQDPbVWHGVixUgXOw+4o4RwWmblhoNYxQrGGFrHNRBpKHw1QgoNrJ6qqOu4Cc7/hCQnBYm91Bi7p+2aVxiQ0a0lWQTBBls6uVx0aO3v6NpbaVPjSTMxRyD/waL8/k38hi953IhUaKQLThtSORKXKMcDlV8YjqHBJeM9B4xHds1BHe49tFadWIuxApF5BQhAZS4bJnosjf0HjF3d7Ds5StHcVejOSq7W4dQNWR3b1mqmKbRUsMqL7TEa5mc5mtyIm1PISULzLLH0aQumunffBvILBsSLykVWUWnzPwddBl1XxJgPkJuQb7DwpmSIW7TGDdpaoCHWs=
+  - secure: h04IBLuVU6sI4B/vfzaN3kypgzmZLt/kzBsGTZFiz2gyvDKk3UOd1DTCfHYbhdMrOMcQ58XyVfjwIR29tWTX8DCA911ej6HVXVIonur3AVXVcbN1f3lhNOoNt7m0hUUJYO8+fU1Q1clAZzt8cFOdKaNJBqOFQ9Sl+9I1ZmnVCWZDsfa4dqiok1xZEMJ6fE4yWqB14OAlFlSMcJJJ526RWZ7LKWN+5X2szOpxG5bIxU5b2eVdWj18myRs+sDKWAQBDJrezvQD33NWezFJxCaxmNPbac1k/Du3yjkENwvytWhq1JqLewTGA8ORPKZKeetaPV2mmMs3C1LXlavPZjyhl37ypQfxoqqsVGnkw6rR8gZtMDcL9dGZzVel7B6K2ztnEq8/Ep6EPvh3Uoo6yht9oLEtlUy4fyt8/uvMhDe8qWEAfqETfeCqE3WO5h1FX3Lunp4rTEi5HrBpCPfmz3d8hk/hWZnOJqT2cAMsDrt0c8htlTa6DwNrAR4yrZEAAvEXCgQcExpzreqY94fmxGxMEF9aool6o/kMLYSz2JXDeOlU1s8TBADAfYOmEsQwH2SmZ00sofPjUeXLKxQ+ahPUnLyC3tkUqg+IrM/Ft4CgRlcikqcaK4b5WAABE/Gj8uKLUGqgldUmWPUCzvHYy9l2odtNslQsvdM2YQRtgypFy34=
+android:
+  components:
+  - tools
+  - platform-tools
+  - build-tools-$ANDROID_BUILD_TOOLS
+  - android-$ANDROID_API
+  - android-$EMULATOR_API_LEVEL
+  - extra-google-m2repository
+  - extra-android-m2repository
+  - addon-google_apis-google-19
+  - sys-img-armeabi-v7a-addon-google_apis-google-$ANDROID_API_LEVEL
+  - sys-img-armeabi-v7a-addon-google_apis-google-$EMULATOR_API_LEVEL
+  licenses:
+  - android-sdk-preview-license-.+
+  - android-sdk-license-.+
+  - google-gdk-license-.+
+before_install:
+- openssl aes-256-cbc -K $encrypted_c6800899873a_key -iv $encrypted_c6800899873a_iv
+  -in keystore.jks.enc -out keystore.jks -d
+- mkdir "$ANDROID_HOME/licenses" || true
+- echo -e "\n8933bad161af4178b1185d1a37fbf41ea5269c55" > "$ANDROID_HOME/licenses/android-sdk-license"
+- echo -e "\n84831b9409646a918e30573bab4c9c91346d8abd" > "$ANDROID_HOME/licenses/android-sdk-preview-license"
+- chmod +x gradlew
+- "./gradlew dependencies || true"
 before_script:
-#- android list targets
-#- echo no | android create avd --force -n test -t android-21 --abi armeabi-v7a
-#- emulator -avd test -no-skin -no-audio -no-window &
-#- android-wait-for-emulator
-#- adb shell input keyevent 82 &
-- sh tag.sh
+- echo no | android create avd --force -n test -t android-21 --abi armeabi-v7a
+- emulator -avd test -no-skin -no-audio -no-window &
+- android-wait-for-emulator
+- adb shell input keyevent 82 &
+script:
+- "./gradlew clean build connectedCheck -PdisablePreDex --stacktrace"
+before_deploy:
+- cp $TRAVIS_BUILD_DIR/example_keystore.jks $HOME
+- cd app/build/outputs/apk/
+- jarsigner -verbose -sigalg SHA1withRSA -digestalg SHA1 -keystore $HOME/keystore.jks
+  -storepass $storepass -keypass $keypass app-release-unsigned.apk sourcefuse
+- jarsigner -verify app-release-unsigned.apk
+- "${ANDROID_HOME}/build-tools/28.0.2/zipalign -v 4 app-release-unsigned.apk TravisExample.apk"
 deploy:
   provider: releases
-  api_key:
-    secure: iR13Xrbof2UqTUX6n4njfHaPMFt+j/hsnyXJ0OvLWcvEkjeDGuaxfmzwVXoXclkxeOVMDybxdzkzQswHmNnN/zInScTG7+t47axklsmrlzpcEZLifxOY9YMN239x2MNSbVvWsk+yaRU7qOJdmeYHpzKJq7cM/KlgX48nt6LPxtgRSraErYx3LKA/Uni8ZPLpNbuFoZv6qfYp+9BG9n1d2JGWAnCz3lxFy96cIEj7f1SHyPHkXVgZ4iTLMQw+51Mny6O2vA2N19Z4Px8Sya+2/WujCXvdE1lXWF9k/OWJmThSMslxiJ+emsJ1EektQbGhb+2jzKgd5RYubtFLvW0ebq2lfOt1X0qr4NNFOtFUxH0wU2WcPY0XMCWoFKjs63a0L/G9jN+pAxTtwwDOryOapbmadREdom1gC+X63bEDJ0A5E+Hc+BZdmWIn8GkhtOb1LgbliihqggrkGA2fh7nL49wzDTNsUZTVGrZXCFUwczSc8NdgzVoTekKrGsUIwDdLgul2YUp6lSW9Ch7aWI9I8F59dLBtTH+vZoBrdg/nwTHJiU+5XNdgsocy911U1oYj3v3xLENa3UkmUQhmXJSBTKb29ojziAj2g8NiUzFy+XddI27n8tVzERUXXtsBzGKJxZ/KQonPwUomcjFrlVSW0SxLcZ+aZ1cEaq0cDf5/m00=
-  file: "app/build/outputs/apk/app-debug.apk"
-  file_glob: 'true'
+  file: TravisExample.apk
   skip_cleanup: true
   on:
-    branch: master
     repo: kambrish/demo_travis
+    tags: true
+    jdk: oraclejdk8
+  api_key:
+    secure: "HSuzXIVZkzcBpfnQgkgze1ocNQ8wcFtPItt9EZ4KX0It5zQIkY/3TTofshIdV3NRWtYUAZquTvcUOYr2E1FUoVW8Dcp0aO1EQbVPcora+8rQS7W8QFh9HOi3KJ+/sO0otxVBYYl8Q8Bp3Q+X5F9sBN6pptXj6rirBPvVlRl28QCgdIHyFsje+oIdc1vxYD9Tt7Qyqo7bsh0NOYseOMq8A3m5RfcQre4ePyTtNjC8mtKqdEwNi5aMNUUFiXF/0cL4U5NFc3po99YDLU0rXbFNmPaR860GA1myv9OhranbwBvypv3UC9n4GgO131+fGzA8aEPiP91jimbqSXERFynZxhio/EyDhqVJ1FkzI+v/wBukAILJOmGygO9ilVFU77BNRExheTQ38A37leC8WZS9nENzi5OxC6+DoO/V+mYEneBgIwNkSApbFVZz5muPxGZHHqc+90v9qPlCwApaEnWoeqyrk7jnAbjVJePun5xZ7VeBZY33iqsGExWZOh0wpeKkZZMMLmG040/3dWfHZRiEhwXc7PrWKuGBOVY43sqLbfqf8vf/gwhSEEA1huh5qDavs2JR9s4SSuPcuFNv8CK2UBOgqN3rhuyhGuDgxwB3fKMhmEz47ZlFoAaPcSC0FE1PdAw3UT3ygsvTFBZN+hqNnbuRXeuEF12eq1yK5QaoPuk="

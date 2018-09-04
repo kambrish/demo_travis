@@ -19,13 +19,19 @@ android {
 
     signingConfigs {
         release {
-            storeFile file("/demo_travis.jks") //check that the file exists
+            storeFile file("/keystore.jks") //check that the file exists
             storePassword "sourcefuse"
             keyAlias "sourcefuse"
             keyPassword "sourcefuse"
         }
     }
+
+    lintOptions {
+        abortOnError false
+    }
 }
+
+
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
