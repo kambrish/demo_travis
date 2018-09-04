@@ -36,7 +36,7 @@ android:
   - android-sdk-license-.+
   - google-gdk-license-.+
 before_install:
-- echo y | android update sdk --no-ui --all --filter "tools,build-tools-24.0.2,platform-tools,android-24,extra-android-m2repository"
+- echo y | android update sdk --no-ui --all --filter "tools,build-tools-28.0.2,platform-tools,android-28,extra-android-m2repository"
 - openssl aes-256-cbc -K $encrypted_c6800899873a_key -iv $encrypted_c6800899873a_iv
   -in keystore.jks.enc -out keystore.jks -d
 - mkdir "$ANDROID_HOME/licenses" || true
