@@ -1,18 +1,19 @@
 language: android
 sudo: required
 jdk: oraclejdk8
-before_cache:
-- rm -f $HOME/.gradle/caches/modules-2/modules-2.lock
-- rm -fr $HOME/.gradle/caches/*/plugin-resolution/
+#before_cache:
+#- rm -f $HOME/.gradle/caches/modules-2/modules-2.lock
+#- rm -fr $HOME/.gradle/caches/*/plugin-resolution/
 cache:
   directories:
   - "$HOME/.gradle/caches/"
   - "$HOME/.gradle/wrapper/"
+  - "$HOME/.android/build-cache"
 env:
   global:
-  - ANDROID_API=28
+  - ANDROID_API_LEVEL=28
   - ANDROID_EMULATOR_LEVEL=18
-  - ANDROID_BUILD_TOOLS=28.0.2
+  - ANDROID_BUILD_TOOLS_VERSION=28.0.2
   - ANDROID_ABI=armeabi-v7a
   - ANDROID_TAG=google_apis
   - QEMU_AUDIO_DRV=none
@@ -21,36 +22,57 @@ env:
   - secure: h04IBLuVU6sI4B/vfzaN3kypgzmZLt/kzBsGTZFiz2gyvDKk3UOd1DTCfHYbhdMrOMcQ58XyVfjwIR29tWTX8DCA911ej6HVXVIonur3AVXVcbN1f3lhNOoNt7m0hUUJYO8+fU1Q1clAZzt8cFOdKaNJBqOFQ9Sl+9I1ZmnVCWZDsfa4dqiok1xZEMJ6fE4yWqB14OAlFlSMcJJJ526RWZ7LKWN+5X2szOpxG5bIxU5b2eVdWj18myRs+sDKWAQBDJrezvQD33NWezFJxCaxmNPbac1k/Du3yjkENwvytWhq1JqLewTGA8ORPKZKeetaPV2mmMs3C1LXlavPZjyhl37ypQfxoqqsVGnkw6rR8gZtMDcL9dGZzVel7B6K2ztnEq8/Ep6EPvh3Uoo6yht9oLEtlUy4fyt8/uvMhDe8qWEAfqETfeCqE3WO5h1FX3Lunp4rTEi5HrBpCPfmz3d8hk/hWZnOJqT2cAMsDrt0c8htlTa6DwNrAR4yrZEAAvEXCgQcExpzreqY94fmxGxMEF9aool6o/kMLYSz2JXDeOlU1s8TBADAfYOmEsQwH2SmZ00sofPjUeXLKxQ+ahPUnLyC3tkUqg+IrM/Ft4CgRlcikqcaK4b5WAABE/Gj8uKLUGqgldUmWPUCzvHYy9l2odtNslQsvdM2YQRtgypFy34=
 android:
   components:
-  - tools
-  - platform-tools
-  - build-tools-$ANDROID_BUILD_TOOLS
-  - android-$ANDROID_API
-  - android-$EMULATOR_API_LEVEL
-  - extra-google-m2repository
-  - extra-android-m2repository
-  - addon-google_apis-google-19
-  - sys-img-armeabi-v7a-addon-google_apis-google-$ANDROID_API_LEVEL
-  - sys-img-armeabi-v7a-addon-google_apis-google-$EMULATOR_API_LEVEL
+    - tools
+    - platform-tools
+    - tools
+    - build-tools-$ANDROID_BUILD_TOOLS_VERSION
+    - android-$ANDROID_API_LEVEL
+    - android-$ANDROID_EMULATOR_LEVEL
+    - extra-android-support
+    - extra-google-m2repository
+    - extra-android-m2repository
+    - sys-img-$ANDROID_ABI-google_apis-$ANDROID_EMULATOR_LEVEL
   licenses:
   - android-sdk-preview-license-.+
   - android-sdk-license-.+
   - google-gdk-license-.+
 before_install:
-- echo y | android update sdk --no-ui --all --filter "tools,build-tools-28.0.2,platform-tools,android-28,extra-android-m2repository"
+- yes | sdkmanager "cmake;3.6.4111459"
+  - wget https://dl.google.com/android/repository/android-ndk-r17-linux-x86_64.zip
+  - unzip android-ndk-r17-linux-x86_64.zip -d $HOME > /dev/null
+  - export ANDROID_NDK_HOME=$HOME/android-ndk-r17
+  - export PATH=$PATH:$ANDROID_NDK_HOME
+  - mkdir "$ANDROID_HOME/licenses" || true
+  - echo -e "\n8933bad161af4178b1185d1a37fbf41ea5269c55" > "$ANDROID_HOME/licenses/android-sdk-license"
+  - echo -e "\n84831b9409646a918e30573bab4c9c91346d8abd" > "$ANDROID_HOME/licenses/android-sdk-preview-license"
+#- echo y | android update sdk --no-ui --all --filter "tools,build-tools-28.0.2,platform-tools,android-28,extra-android-m2repository"
 - openssl aes-256-cbc -K $encrypted_c6800899873a_key -iv $encrypted_c6800899873a_iv
   -in keystore.jks.enc -out keystore.jks -d
-- mkdir "$ANDROID_HOME/licenses" || true
-- echo -e "\n8933bad161af4178b1185d1a37fbf41ea5269c55" > "$ANDROID_HOME/licenses/android-sdk-license"
-- echo -e "\n84831b9409646a918e30573bab4c9c91346d8abd" > "$ANDROID_HOME/licenses/android-sdk-preview-license"
+#- mkdir "$ANDROID_HOME/licenses" || true
+#- echo -e "\n8933bad161af4178b1185d1a37fbf41ea5269c55" > "$ANDROID_HOME/licenses/android-sdk-license"
+#- echo -e "\n84831b9409646a918e30573bab4c9c91346d8abd" > "$ANDROID_HOME/licenses/android-sdk-preview-license"
 - chmod +x gradlew
 - "./gradlew dependencies || true"
-before_script:
+
+script:
+ - android list targets
+  - echo no | android create avd --force -n test -t "android-"$ANDROID_EMULATOR_LEVEL --abi $ANDROID_ABI --tag $ANDROID_TAG
+  - emulator -avd test -no-window &
+  - mkdir -p build/reports
+#  - ./gradlew dependencyCheckAnalyze
+  - ./gradlew assembleDebugAndroidTest -PdisablePreDex --continue --stacktrace
+  - android-wait-for-emulator
+#  - adb shell input keyevent 82 &
+  - ./gradlew connectedDebugAndroidTest -PdisablePreDex --continue --stacktrace
+
+
+#before_script:
 #- echo no | android create avd --force -n test -t "android-"$ANDROID_EMULATOR_LEVEL --abi $ANDROID_ABI --tag
 #- emulator -avd test -no-skin -no-audio -no-window &
 #- android-wait-for-emulator
 #- adb shell input keyevent 82 &
-script:
-- "./gradlew clean build connectedCheck -PdisablePreDex --stacktrace"
+#script:
+#- "./gradlew clean build connectedCheck -PdisablePreDex --stacktrace"
 before_deploy:
 - cp $TRAVIS_BUILD_DIR/example_keystore.jks $HOME
 - cd app/build/outputs/apk/
