@@ -4,9 +4,9 @@ sudo: false
 
 env:
   global:
-    - ANDROID_API_LEVEL=27
+    - ANDROID_API_LEVEL=28
     - ANDROID_EMULATOR_LEVEL=18
-    - ANDROID_BUILD_TOOLS_VERSION=28.0.1
+    - ANDROID_BUILD_TOOLS_VERSION=28.0.2
     - ADB_INSTALL_TIMEOUT=20
     - ANDROID_ABI=armeabi-v7a
     - ANDROID_TAG=google_apis
@@ -73,7 +73,7 @@ before_deploy:
 - jarsigner -verbose -sigalg SHA1withRSA -digestalg SHA1 -keystore $HOME/keystore.jks
   -storepass $storepass -keypass $keypass app-release-unsigned.apk sourcefuse
 - jarsigner -verify app-release-unsigned.apk
-- "${ANDROID_HOME}/build-tools/28.0.2/zipalign -v 4 app-release-unsigned.apk TravisExample.apk"
+- "${ANDROID_HOME}/build-tools/${ANDROID_BUILD_TOOLS_VERSION}/zipalign -v 4 app-release-unsigned.apk TravisExample.apk"
 - scripts/tag.sh
 deploy:
   provider: releases
