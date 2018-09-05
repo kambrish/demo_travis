@@ -44,7 +44,18 @@ platform :android do
                  "android.injected.signing.key.alias" => "sourcefuse",
                  "android.injected.signing.key.password" => "sourcefuse",
                               })
+                              action set_github_release
       end
+
+      github_release = set_github_release(
+        repository_name: "kambrish/demo_travis",
+        api_token: ENV["6c5b98891617188c81e160d2334b819f84f3fe96"],
+        name: "Super New actions14",
+        tag_name: "v1.22.4",
+        description: (File.read("changelog") rescue "No changelog provided"),
+        commitish: "master",
+        upload_assets: ["./app/build/outputs/apk/release/app-release.apk", "./app/build/outputs/apk/release/app-release.apk"]
+      )
 
 end
 
