@@ -46,4 +46,4 @@ script:
 #- ./gradlew test
 
 - fastlane test
-- fastlane deploy_production name:TRAVIS_BUILD_NUMBER tagname:TRAVIS_BUILD_NUMBER
+- fastlane deploy_production name:ergo tagname:v2.4.66
