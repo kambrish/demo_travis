@@ -53,7 +53,7 @@ platform :android do
 
       action set_github_release(
         repository_name: "kambrish/demo_travis",
-        api_token: "b05b838e5cbbd522b0f05ec0da2654b2862a5029",
+        api_token: "04daca95f68721b1762642d25ab7c7804e0dce28",
         name:  git_name,
         tag_name: git_tagname,
         description: (File.read("changelog") rescue "No changelog provided"),
