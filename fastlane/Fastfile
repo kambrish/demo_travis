@@ -36,7 +36,12 @@ platform :android do
   end
 
   desc "Deploy a new version to the Google Play"
-    lane :deploy_production do
+    lane :deploy_production do |options|
+    puts options[:name]
+    puts options[:tagname]
+    git_name = options[:name]
+    git_tagname = options[:tagname]
+
       gradle(task: "assembleRelease",
              properties: {
                  "android.injected.signing.store.file" => "keystore.jks",
@@ -44,18 +49,17 @@ platform :android do
                  "android.injected.signing.key.alias" => "sourcefuse",
                  "android.injected.signing.key.password" => "sourcefuse",
                               })
-                              action set_github_release
-      end
 
-      github_release = set_github_release(
+
+      action set_github_release(
         repository_name: "kambrish/demo_travis",
-        api_token: ENV["6c5b98891617188c81e160d2334b819f84f3fe96"],
-        name: "Super New actions14",
-        tag_name: "v1.22.4",
+        api_token: "b05b838e5cbbd522b0f05ec0da2654b2862a5029",
+        name:  git_name,
+        tag_name: git_tagname,
         description: (File.read("changelog") rescue "No changelog provided"),
         commitish: "master",
         upload_assets: ["./app/build/outputs/apk/release/app-release.apk", "./app/build/outputs/apk/release/app-release.apk"]
       )
-
+    end
 end
 
